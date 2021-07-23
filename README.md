@@ -24,16 +24,19 @@ Bulk RNAseq technologies have been widely used to study gene expression patterns
  - In most cases computational analysis requires adaption of the existing methods or development of new ones.
 Note: got lots of idea from website "Analysis of single cell RNA-seq data" https://scrnaseq-course.cog.sanger.ac.uk/website/index.html
 ## 2. Data analysis Workflow
+![](/image/10X_pipeline.png)
 ### 2.1 From BCL to Fastq
 `cellranger mkfastq` is used to demulitiplex BCL files (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_fq)
 ```shell
-cellranger mkfastq --id=output_foldername \
-		   --run=flowcell_runid_path \
+cellranger mkfastq --id={output_foldername} \
+		   --run={flowcell_runid_path} \
 		   --csv=samplesheet.csv
 ```
-### Data Processing and Quality Control
-https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_ct
+![](image/lib-v3.png)
+Data Processing and Quality Control
+
 ### 2.2 Count summary
+https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_ct
 ```shell
 cellranger count --id={sample} --transcriptome={reference genome} --fastqs={fastq files} 
 ```
