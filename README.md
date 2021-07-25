@@ -25,17 +25,24 @@ Bulk RNAseq technologies have been widely used to study gene expression patterns
 Note: got lots of idea from website "Analysis of single cell RNA-seq data" https://scrnaseq-course.cog.sanger.ac.uk/website/index.html
 ## 2. Data analysis Workflow
 ![](/image/10X_pipeline.png)
+Cell Ranger is a set of analysis pipelines that process Chromium single-cell data to align reads, generate feature-barcode matrices, perform clustering and other secondary analysis, and more. Cell Ranger includes four pipelines relevant to the 3' Single Cell Gene Expression Solution and related products.
 ### 2.1 From BCL to Fastq
-`cellranger mkfastq` is used to demulitiplex BCL files (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_fq)
+`cellranger mkfastq` is used to demulitiplex BCL files (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_fq). It is a wrapper around Illumina's bcl2fastq, with additional features that are specific to 10X libraries and a simplified sample sheet format.
 ```shell
 cellranger mkfastq --id={output_foldername} \
 		   --run={flowcell_runid_path} \
 		   --csv=samplesheet.csv
 ```
+Final fragment from Chromium single cell 3' v3 library
 ![](image/lib-v3.png)
-Data Processing and Quality Control
+I1.fastq.gz: 8bp P7 index (sample index)
+R1.fastq.gz: total 28 bp, 16bp barcode + 10bp UMI
+R2.fastq.gz: 91bp cDNA
+The FASTQ files are named according to the sample column of the sample sheet. If a sample ID was not specified, the flowcell ID is used instead(not shown here). In addition to the FASTQ files, bcl2fastq generates various summary files. If -stats-dir was not specified, summary and statistic files will be stored in a Stats folder by default.
+
 
 ### 2.2 Count summary
+`Cellranger count` quantifies single-cell gene expression.
 https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_ct
 ```shell
 cellranger count --id={sample} --transcriptome={reference genome} --fastqs={fastq files} 
