@@ -91,15 +91,50 @@ Rscript HVG.R --input --output
 ### 2.4 Cell subpopulation identification
 A key goal of 10X scRNA-seq data analysis is to identify cell subpopulations (different populations are often distinct cell types) within a certain condition or tissue to unravel the heterogeneity of cells. To identify a gene expression signature associated with this sample or group of cells, HVGs previously determined are used as input for dimensionality reduction via principal component analysis (PCA). The resulting PCs were then used as input for clustering analysis.
 #### 2.4.1 Principal Components Analysis
+Principal components analysis (PCA) discovers axes in high-dimensional space that capture the largest amount of variation. The PCA on the log-normalized expression values is performed using runPCA function with setting total 50 PCs.
+```R
+Rscript PCA.R --input {} --output {}
+```
+#### 2.4.2 Identify Clusters of Cells
+To partition the data into clusters of transcriptionally related cells, a shared nearest neighor (SNN) modularity optimization based clustering algorithm is used to identify clusters of cells. In this process, the top PCs retained as input for clustering, generally ranging from 5 to 20, are determined by elbow point as shown in Figure
 
 seurat: FindClusters
 ```R
+Rscript FindClusters.R --input {} --output {}
+```
+#### 2.4.3 Dimensionality Reduction and Visualization
+For visualization purpose, dimensionality was further reduced to 2D using t-distributed stochastic neighbor embedding (t-SNE) and uniform manifold approximation and projection (UMAP). Both of them are try to find a low-dimensional representation that preserves relationships between neighbors in high-dimensional space. Compared to t-SNE, the UMAP visualization tends to have more compact visual clusters with more empty space between them.
+```R
+
 ```
 ### 2.5 Marker Gene Detection
+Identification of marker genes is usually based around the retrospective detection of differential expression between clusters. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to consider the clustering as a proxy for cell-type identity. Significantly differential expressed genes for each cluster were identified using the Wilcox test with teh thredhold qvaule < 0.05 and log2foldchange > 0.25
+#### 2.5.1 List of Marder Genes
+#### 2.5.2 Expression Pattern of Marker Genes
+Heatmaps showing expression of indicated marker genes for given cells and features.
+#### 2.5.3 Expression level of Marker Genes
+#### 2.5.4 t-SNE/UMAP Visualize Expression of Marker Genes
 seurat: FindAllMarkers
 ```R
 ```
 ### 2.6 Enrichment analysis
+Enrichment analysis is a widely used approach to determine whether known biological functions or processes are over-represented (= enriched) in an experimentally-derived gene list, e.g. a list of differentially expressed genes (DEGs)
+The p-value can be calculated by hypergeometric distribution
+
+Here, N is the number of all genes with a GO or KEGG annotation, n is the number of DEGs in N, M is the number of all genes annotated to specific items, and m is number of DEGs in M.
+#### 2.6.1 GO Enrichment Analysis
+Gene Ontology (GO) is a standardized classification system widely used for gene function, which supplies a set of controlled vocabulary to describe the property of genes and gene products comprehensively. There are 3 ontologies in GO system: molecular function, cellular component and biological process. The basic unit of GO is GO-term, each of which belongs to one type of ontology.
+Theis method firstly maps all source genes to GO terms in the database(http://www.geneontology.org/), calculating gene numbers for each term, then using Vallenius non-central hyper-geometric disribution to find significantly  enriched GO terms in source genes comparing to the reference genes background.
+
+
+Complex heatmaps are efficient to visualize associations between different sources of data sets and reveal potential patterns. The hierarchical clustering is produced by a pre-defined distance method called "euclidean".
+
+Go enrichment Histogram and Scatter plot of marker genes
+
+Enrichment map organizes enriched terms into a network with edges connecting overlapping gene sets. In this way, mutually overlapping gene sets are tend to cluster together, making it easy to identify functional module.
+
+#### 2.6.2 KEGG Enrichment Analysis
+The interactions of multiple genes may be involved in certain biological functions. KEGG(Kyoto Encyclopedia of Genes and Genomes) is a collection of manually curated databases dealing with genomes, biological pathways, diseases, drugs and chemical substances. KEGG is utilized for bioinformatics research and education, including data analysis in genomics, metagenomics, metabolomics and other omics studies. Pathway enrichment analysis identifies significantly enriched metabolic pathways or signal transduction pathways associated with differentially expressed marker genes compared with the whole genome background.
 GO, KEGG, REACTOME, GSEA
 `clusterprofile` is used for enrichment analysis 
 ```R
