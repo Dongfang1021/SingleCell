@@ -135,6 +135,15 @@ Enrichment map organizes enriched terms into a network with edges connecting ove
 
 #### 2.6.2 KEGG Enrichment Analysis
 The interactions of multiple genes may be involved in certain biological functions. KEGG(Kyoto Encyclopedia of Genes and Genomes) is a collection of manually curated databases dealing with genomes, biological pathways, diseases, drugs and chemical substances. KEGG is utilized for bioinformatics research and education, including data analysis in genomics, metagenomics, metabolomics and other omics studies. Pathway enrichment analysis identifies significantly enriched metabolic pathways or signal transduction pathways associated with differentially expressed marker genes compared with the whole genome background.
+KEGG enrichment scattered plot shows the DEGs enrichment analysis results in KEGG pathway. The degree of KEGG enrichment is measured by Rich factor, q-value and the number of genes enriched in this pathway. Rich factor refers to the ratio of the DEGs number in the pathway and the number of all genes annotated in the pathway. Q-value is the p-value after normalization and its range is [0,1]. The smaller q-value is, the more significant the enrichment is. The top20 significantly DGEs enriched pathways are displayed in the report. If the enriched pathways are less than 20, all enriched pathways are displayed. 
+
+#### 2.6.3 Reactome Enrichment Analysis
+The Reactome is a database fo reactions, pathways and biological process, which can be used to browse pathways and submit data to a suite of data analysis tools, containing curated annotations that cover a diverse set of topics in molecular and celluar biology. Reactome terms with padj < 0.05 are significant enrichment.
+#### 2.6.4 Functional Annotation of Transcription Factor
+TFCat is a curated catalog of mouse and human transcription factors (TF) based on a reliable core collection of annotations obtained by experts' review of the scientific literature. Annotated genes are assigned to a functional category and confidence level. We use the differentially expressed marker genes in each cluster to search the TFCat, then provides the annotation of the TF and corresponding reference (PubMed ID).
+#### 2.6.5 
+
+
 GO, KEGG, REACTOME, GSEA
 `clusterprofile` is used for enrichment analysis 
 ```R
