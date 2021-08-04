@@ -105,14 +105,22 @@ Rscript FindClusters.R --input {} --output {}
 #### 2.4.3 Dimensionality Reduction and Visualization
 For visualization purpose, dimensionality was further reduced to 2D using t-distributed stochastic neighbor embedding (t-SNE) and uniform manifold approximation and projection (UMAP). Both of them are try to find a low-dimensional representation that preserves relationships between neighbors in high-dimensional space. Compared to t-SNE, the UMAP visualization tends to have more compact visual clusters with more empty space between them.
 ```R
-
+Rscript Dimentionality_reduction.R
 ```
 ### 2.5 Marker Gene Detection
 Identification of marker genes is usually based around the retrospective detection of differential expression between clusters. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to consider the clustering as a proxy for cell-type identity. Significantly differential expressed genes for each cluster were identified using the Wilcox test with teh thredhold qvaule < 0.05 and log2foldchange > 0.25
-#### 2.5.1 List of Marder Genes
+#### 2.5.1 List of Marker Genes
+```R
+Rscript marker_gene.R --input --output
+```
 #### 2.5.2 Expression Pattern of Marker Genes
 Heatmaps showing expression of indicated marker genes for given cells and features.
+```R
+Rscript marker_gene_heatmap.R --input --output
+```
 #### 2.5.3 Expression level of Marker Genes
+```R
+```
 #### 2.5.4 t-SNE/UMAP Visualize Expression of Marker Genes
 seurat: FindAllMarkers
 ```R
