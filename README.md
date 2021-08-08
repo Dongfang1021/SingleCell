@@ -75,6 +75,7 @@ python qc.py --input --output
 python alignment.py --input --output
 ```
 > Gene Expression Algorithms Overiew
+> 
 > **Alignment**
 > Read Trimming
 > This section on read trimming applies to 3' gene expression assays.
