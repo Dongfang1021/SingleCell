@@ -113,6 +113,7 @@ python alignment.py --input --output
 > After these two filtering steps, each observed barcode, UMI, gene combination is recorded as a UMI count in the unfiltered feature-barcode matrix. The number of reads supporting reach counted UMI is also recored in the molecule info file.
 > 
 > **Calling Cell Barcodes**
+> 
 > Cell Ranger 3.0 introduces an improved cell-calling algorithm that is better able to identify populations of low RNA content cells, especially when low RNA content cells are mixed into a population of high RNA content cells. For example, tumer samples often contain large tumor cells mixed with smaller tumor infiltrating lymphocytes (TIL) and research may be particularly interested in the TIL population. The new alogrithm is based on the EmptyDrops method(Lun et al., 2018)
 > 
 > The algorithm has two key steps:
