@@ -114,15 +114,23 @@ python alignment.py --input --output
 > 
 > **Calling Cell Barcodes**
 > Cell Ranger 3.0 introduces an improved cell-calling algorithm that is better able to identify populations of low RNA content cells, especially when low RNA content cells are mixed into a population of high RNA content cells. For example, tumer samples often contain large tumor cells mixed with smaller tumor infiltrating lymphocytes (TIL) and research may be particularly interested in the TIL population. The new alogrithm is based on the EmptyDrops method(Lun et al., 2018)
+> 
 > The algorithm has two key steps:
+> 
 > 1. It uses a cutoff based on total UMI count of each barcode to identify cells. This step identifies the primary mode of high RNA content cells.
+> 
 > 2. The the algorithm uses the RNA profile of each remaining barcode to determing if it is an 'empty' or a cell containing partition. This second step captures low RNA content cells whose total UMI counts may be similar to empty GEMs.
 > 
 > In the first step, the original Cell Ranger cell calling algorithm is used to identify the primary mode of high RNA content cells, using a cutoff based on the total UMI count for each barcode. Cell Ranger takes as input the expected number of recovered cells, N(see --expect-cells). Let m be the 99th percentile of the top N barcodes by total UMI counts. All barcodes whose total UMI counts exceed m/10 are called as cells in the first pass.
+> 
 > In the second step, a set of barcodes with low UMI counts that likely represnt "empty" GEM partitions is selected. A model of the RNA profile of selected barcodes is created. This model, called the background model, is a multinomial distribution over genes. It uses Simple Good-Turing smoothing to provide a non-zero model estimate for genes that were not observed in the respresentative empty GEM set. Finally, the RNA profile of each barcode not called as a cell in the first step is compared to the background model. Barcodes whose RNA profile strongly disagree with the background model are added to the set of positive cell calls. This step identifies cells that are clearly distinguishable from the profile of empty GEMs, even though they may have much lower RNA content than the largest cells in the experiment.
+> 
 > Below is an example of a challenging cell calling scenario where 300 high RNA content 293T cells are mixted with 2000 low RNA content PBMC cells. On the left is the cell calling result with the celling algorithm prior Cell Ranger 3.0 and on the right is the Cell Ranger 3.0 result. You can see that low RNA content cells are successfully identified by the new algorithm.
+> 
 > The plot shows the count of filtered UMIs mapped to each barcode. Barcode can be determined to be cell-associated based on their UMI count or by their RNA profiles. Therefore some regions of the graph can contain both cell-associated and background-associated barcodes. The color of the graph represents the local dentisty of barcodes that are cell-associated.
+> 
 > In some cases the set of barcodes called as cell may not match the desired set of barcodes based on visual inspection. This can be remedied by either re-runing `count` or `reanalyze` with the --force-cells option, or by selecting the desired barcodes from the raw feature-barcode matrix in downstream analysis. Custome barcode selection can also be done by specifying --barcodes to `reanalyze`
+> 
 > **Calling Cell Barcodes in Targeted Gene Expression**
 
 ##### Cell Calling and UMI Counting
