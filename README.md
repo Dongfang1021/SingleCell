@@ -25,7 +25,14 @@ Bulk RNAseq technologies have been widely used to study gene expression patterns
 Note: got lots of idea from website "Analysis of single cell RNA-seq data" https://scrnaseq-course.cog.sanger.ac.uk/website/index.html
 ## 2. Data analysis Workflow
 ![](/image/10X_pipeline.png)
+
+
+
 Cell Ranger is a set of analysis pipelines that process Chromium single-cell data to align reads, generate feature-barcode matrices, perform clustering and other secondary analysis, and more. Cell Ranger includes four pipelines relevant to the 3' Single Cell Gene Expression Solution and related products.
+
+
+
+10X cellranger website 
 ### 2.1 From BCL to Fastq
 `cellranger mkfastq` is used to demulitiplex BCL files (https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_fq). It is a wrapper around Illumina's bcl2fastq, with additional features that are specific to 10X libraries and a simplified sample sheet format.
 ```shell
@@ -33,6 +40,9 @@ cellranger mkfastq --id={output_foldername} \
 		   --run={flowcell_runid_path} \
 		   --csv=samplesheet.csv
 ```
+
+
+
 Final fragment from Chromium single cell 3' v3 library
 ![](image/lib-v3.png)
 - I1.fastq.gz: 8bp P7 index (sample index)
@@ -47,9 +57,15 @@ Reads from scRNA-seq were processed by Cell Ranger software (10X Genomics) with 
 #### 2.2.1 Cellranger count
 `Cellranger count` quantifies single-cell gene expression. Meanwhile, it provides sequencing summary
 https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/tutorial_ct
+`Cellranger count` takes FASTQ files from `cellranger mkfastq` and performs alignment, filtering, barcode counting and UMI counting. It uses the Chromium cellular barcodes to generate feature-barcode matrices, determine clusters, and perform gene expression analysis. The `count` pipeline can take input from multipe sequencing runs on the same GEM well. `cellranger count` also process Feature Barcode data alongside Gene Expression reads.
+
 ```shell
 cellranger count --id={sample} --transcriptome={reference genome} --fastqs={fastq files} 
 ```
+If you are beginning with FASTQ files that have already been demultiplexed with `bcl2fastq` directly, or from a public source such as SRA, you can skip `cellranger mkfastq` and begin with `cellranger count`. 
+
+
+
 ##### Initial quality control
 ```python
 python qc.py --input --output
@@ -62,6 +78,30 @@ python alignment.py --input --output
 ```python
 python cell_umi.py --input --output
 ```
+##### Optional steps
+
+`cellranger aggr` aggregates outputs from multiple runs of cellranger count, normalizing those runs to the same sequencing depth and the recomputing the feature-barcode matrices and analysis on the combined data. The `aggr` pipeline can be used to combine data from multiple samples into an experiment-wide feature-barcode matrix and analysis.
+
+`cellranger reanalyze` takes feature-barcode matrices produced by `cellranger count` or `cellranger aggr` and rerun the dimensionality reduction, clustering, and gene expression algorithms using tunable parameter settings.
+
+
+`cellranger multi` is ued to analyze Cell Multiplexing data. It inputs FASTQ files from `cellranger mkfastq` and performs alignment, filtering, barcode counting, and UMI counting. It uses the Chromium cellular barcodes to generate feature-barcode matrices, determine clusters, and perform gene expression analysis. The `cellranger multi` pipeline also supports the analysis of Feature Barcode data.
+
+The exact steps of the workflow vary depending on how many samples, GEM wells, and flowcells you have, and wether you are including data from Feature Barcodes or Cell Multiplexing kits.
+
+**One Sample, One GEM Well, One Flowcell**
+`cellranger mkfastq`
+`cellranger count`
+**One sample, One GEM well, Multiple Flowcells**
+In this case, all reads can be combined in a single instance of the `cellranger count` pipeline. 
+**One Sample, Multiple GEM Wells, One Flowcell**
+Here, one sample is processed through multiple GEM wells. This is typically done when conducting technical replicate experiments. The libraries from the GEM wells are then pooled onto one flowcell and sequenced. In this case, demultiplex the data from the sequencing run with `cellranger mkfastq`, then run the libraries from each GEM well through a seperate instance of `cellranger count`. Then you can perform a combined analysis using `cellranger aggr`, as described in Multi-Library Aggregation.
+**Multiple Samples, Multiple GEM Wells, One Flowcell**
+In this example, multple samples are processed through multiple GEM wells, which generate multiple libraries and are pooled onto one flowcell. After demultiplexing, you must run `cellranger count` separately for each GEM well; if you have two GEM wells, then run `cellranger count` twice. Then you can aggregate them with a single instance of `cellranger aggr`, as described in Multi-Library Aggregation
+**Multiple Samples, One GEM Well, One Flowcell (Cell Multiplexing)**
+Cell Ranger 6.0 introduces support for analyzing Cell Multiplexing data. In this case, multiplex samples are uniquely tagged with Cell Multiplexing Oligos (CMOs), enabling multiple samples to be pooled in a single GEM well. This results in a CMO and Gene Expression (GEX) library for each GEM well. After running `cellranger mkfastq` to generate FASTQ files, run the `cellranger multi` pipeline on the combined FASTQ data for the GEX and CMO libraries.
+
+
 
 
 #### 2.2.2 Quality control and cell filtering based on Seurat R package
