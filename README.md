@@ -213,7 +213,7 @@ TFCat is a curated catalog of mouse and human transcription factors (TF) based o
 The protein-protein interaction network is constructed for differentially expressed genes in each cluster by using STRING protein interaction database. Protein-protein interaction is provided as network file which can be imported into Cytoscape software and visualized and edited. The central organizing metaphor of Cytoscape is a network graph, with molecular species represented as nodes and intermolecular interactions represented as links, that is, edges, between nodes.
 ```R
 ```
-##Some useful reference from 10X Genomics Website
+## Some useful reference from 10X Genomics Website
 
 
 > 
