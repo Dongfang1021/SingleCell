@@ -291,5 +291,39 @@ The protein-protein interaction network is constructed for differentially expres
 > **Secondary Analysis**
 > Dimensionality Reduction
 > In order to reduce the gene expression matrix to its most important features, Cell Ranger uses Principal component Analysis (PCA) to change the dimensionality of the dataset from (cells x genes) to (cells x M) where M is a user-selectable number of principal components (via num_principal_comps). The pipeline uses a python implementation of IRLBA algorithm, (Baglama & Reichel, 2005), which we modified to reduce memory comsumption. The `reanalyze` pipeline allows the user to further reduce data by randomly subsampling the cells and/or selecting genes by their dispersion across the dataset. Note that if the data contains Feature Barcode data, only the gene expression data will be used for PCA and subsequent analysis.
+> 
 > t-SNE
-> For visualizing data in 2-d space, Cell Ranger 
+> 
+> For visualizing data in 2-d space, Cell Ranger passes the PCA-reduced data into t-SNE (t-Stochastic Neighbor Embedding), a nonlinear dimensionality reduction method. (Van der Maaten, 2014) The C++ reference implementation by Van der Maaten was modified to take a PRNG seed for determinism and to expose various parameters which can be changed in reanalyze. We also decreased its runtime by fixing the number of output dimensions at compile time to 2 or 3.
+> 
+> UMAP
+> 
+> Cell Ranger also supports visualization with UMAP(Uniform Manifold Approximation and Projection), which estimates a topology of the high dimensional data and uses this information to estimate a low dimensional embedding that preserves relationships present in the data. (Leland Mclnnes et al., 2018) Then pipeline uses the python implementation of this algorithm by Leland Mclnnes. The reanalyze pipeline allows the user to customize the parameters for the UMAP, including n_neighors, min_dist and metric etc. Below show the t-SNE (left) and UMAP (right) visulizations of our publica dataset 5k PBMCs.
+> Clustering
+> Cell Ranger uses two different methods for clustering cells by expression similarity, both of which operate in the PCA space.
+> Graph-based
+> The graph-based clustering algorithm consists of building a sparse nearest-neighbor graph (where cells are linked if they among the k nearest Eucldean neighors of one another), followed by Louvain Modularity Optimization (LMO; Blondel, Guillaume, Lambiotte, & Lefebvre, 2008), an algorithm which seeks to find highly-connected "modules" in the graph. The value of k, the number of nearest neighbors, is set to scale logarithmically with the number of cells. An additional cluster-merging step is done: Perform hierarchical clustering on the cluster-medoids in PCA space and merge pairs of sibiling clusters if there are no genes differentially expressed between them (with B-H adjusted p-value below 0.05). The hierarchical clustering and merging is repeated until there are no more cluster-pairs to merge.
+> 
+> The use of LMO to cluster cells was inspired by a similar method in the R package Seurat
+> 
+> K-means
+> 
+> Cell Ranger also performs traditional K-means clustering across a range of K values, where K is the preset number of clusters. In the web summary prior to 1.3.0, the default selected value of K is that which yields the best Davies-Bouldin Index, a rough measure of clustering quality.
+> 
+> Differential Expression
+> 
+> In order to identify genes whose expression is specific to each cluster, Cell Ranger tests, for each gene and each cluster, whether the in-cluster mean differs from the out-of-cluster mean.
+> 
+> In order to find differentially expressed genes between groups of cells, Cell Ranger uses the quick and simple method sSeq(Yu, Huber, & Vitek, 2013), which employs a negative binomial exact test. When the counts become large, Cell Ranger switches to the fast asymptomic beta test used in edgeR (Robinson & Smyth, 2007). For each cluster, the algorithm is run on that cluster versus all other cells, yielding a list of genes that are differentially expressed in that cluster relative to the rest of the sample.
+> 
+> Cell Ranger's implementation differs slightly from that in the paper: in the sSeq paper, the authors recommend using DESseq's geometric mean-based definition of library size. Cell Ranger instead computes relative library size as the totall UMI counts for each cell divided by the median UMI counts per cell. As with sSeq, normalization is implicit in that the per-cell library-size parameter is incorporated as a factor in the exact-test probability calculations.
+> 
+> Chemistry Batch Correction
+> 
+> To correct the batch effects between chemistries, Cell Ranger uses an algorithm based on mutual nearest neighbor (MNN; Haghverdi et al, 2018) to identify similar cell subpopulations between batches. The mutual nearest neighbor is defined as a pair of cells from two different batches that is contained in each other's set of nearest neighbors. The MNNs are detected for every pair of user-defined batches to batches to balance among batches, as proposed in (Park et al, 2018)
+> 
+> The cell subpopulation matches between batches will then be used to merge multiple batches together (Hie et al, 2018). The difference in expression values between cells in a MNN pair provides an estimate of the batch effect. A correction vector for each cell is obtained as weighted average of the estimated batch effects, where a Gaussian kernel function up-weights matching vectors belonging to nearby points (Haghverdi et al, 2018).
+> 
+> The batch effect score is defined to quantitatively measure the batch effect before and after correction. For every cell, we calculate how many of its k nearest-neighbors belong to the same batch and normalize it by the expected number of same batch cells when there isn't batch effect. The batch effect score is calculated as the average of above metric in randomly sampled 10% of the total number of cells. If there isn't batch effect, we would expect that each cells' nearest neighbors would be evenly shared across all batches and the batch effect score is close to 1.
+> 
+> In the example below, the BPMC mixture was profiled separtely by Single Cell 3' v2(brown) and Single Cell 3' v3 (blue). On the left is the t-SNE plot after aggregating two libraries without the batch correction, and on the right is the t-SNE plot with the batch correction. The batch effect score decreased from 1.81 to 1.31 with the chemistry batch correction.
