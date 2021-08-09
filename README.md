@@ -96,15 +96,19 @@ The exact steps of the workflow vary depending on how many samples, GEM wells, a
 - `cellranger count` performs alignment, filtering, barcode counting and UMI counting. It uses the Chromium cellular barcodes to generate feature-barcode matrices, determine clusters, and perform gene expression analysis.
 
 **One sample, One GEM well, Multiple Flowcells**
+
 In this case, all reads can be combined in a single instance of the `cellranger count` pipeline. 
 
 **One Sample, Multiple GEM Wells, One Flowcell**
+
 Here, one sample is processed through multiple GEM wells. This is typically done when conducting technical replicate experiments. The libraries from the GEM wells are then pooled onto one flowcell and sequenced. In this case, demultiplex the data from the sequencing run with `cellranger mkfastq`, then run the libraries from each GEM well through a seperate instance of `cellranger count`. Then you can perform a combined analysis using `cellranger aggr`, as described in Multi-Library Aggregation.
 
 **Multiple Samples, Multiple GEM Wells, One Flowcell**
+
 In this example, multple samples are processed through multiple GEM wells, which generate multiple libraries and are pooled onto one flowcell. After demultiplexing, you must run `cellranger count` separately for each GEM well; if you have two GEM wells, then run `cellranger count` twice. Then you can aggregate them with a single instance of `cellranger aggr`, as described in Multi-Library Aggregation
 
 **Multiple Samples, One GEM Well, One Flowcell (Cell Multiplexing)**
+
 Cell Ranger 6.0 introduces support for analyzing Cell Multiplexing data. In this case, multiplex samples are uniquely tagged with Cell Multiplexing Oligos (CMOs), enabling multiple samples to be pooled in a single GEM well. This results in a CMO and Gene Expression (GEX) library for each GEM well. After running `cellranger mkfastq` to generate FASTQ files, run the `cellranger multi` pipeline on the combined FASTQ data for the GEX and CMO libraries.
 
 
