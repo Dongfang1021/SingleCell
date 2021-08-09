@@ -60,11 +60,48 @@ https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/l
 `Cellranger count` takes FASTQ files from `cellranger mkfastq` and performs alignment, filtering, barcode counting and UMI counting. It uses the Chromium cellular barcodes to generate feature-barcode matrices, determine clusters, and perform gene expression analysis. The `count` pipeline can take input from multipe sequencing runs on the same GEM well. `cellranger count` also process Feature Barcode data alongside Gene Expression reads.
 
 ```shell
-cellranger count --id={sample} --transcriptome={reference genome} --fastqs={fastq files} 
+cellranger count --id={sample} \
+		--transcriptome={reference genome} \
+		--fastqs={fastq files} 
 ```
 If you are beginning with FASTQ files that have already been demultiplexed with `bcl2fastq` directly, or from a public source such as SRA, you can skip `cellranger mkfastq` and begin with `cellranger count`. 
 
+**Web Summary**
 
+The `cellranger` pipeline outputs a summary HTML file named `web_summary.html` that contains summary metrics and automated secondary anlysis results. If an issue was detected during the pipeline run, an alert appears on this page.
+
+cellranger count Web Summary
+
+The run summary from `cellranger count` can be viewed by clicking "Summary" in the top left corner. The summary metrics describe sequencing quality and various characterisitcs of the detected cells. Similar web summaries are also output from the `cellranger reanalyze` and `cellranger aggr` pipelines.
+
+![](image/web-summary-gex-3.1a.png)
+
+The number of cells detected, the mean reads per cell and the median genes detected per cell are prominently displayed near the top of the page.
+
+The Barcode Rank Plot under the "Cells" dashboard show the distribution of barcode counts and which barcodes were inferred to be associated with cells. The y-axis is the number of UMI mapped to each barcode and the x-axis is the nunber of barcodes below that value. A steep drop-off is indicative of good separation between the cell-associated barcodes and the barcodes associated with empty paritions. Barcodeds can be determined to be cell-associated based on their UMI count or by their RNA fprofiles, therefore some regions of the graph can contain both cell-associated and background-associated barcodes. The color of the graph represents the local density of barcodes that are cell-associated.
+
+Analysis View
+The automated secondary analysis results can be viewed by clicking "Analysis" in the top left corner. The secondary analysis provides the followings:
+- A dimensional reduction analysis which projects the cells into a 2-D space (t-SNE)
+- An automated clustering analysis which groups together cells that have similar expression profiles
+- A list of genes that are differentially expressed between the selected clusters.
+- A plot showing the effect of decreased sequencing depth on observed library complexity
+- A plot showing the effect of decreased sequencing depth on median genes per cell detected
+  
+
+![](image/web-summary-gex-3.1b.png)
+
+The top left plot shows the 2-D t-SNE projection of the cells colored by the total UMI counts per cell. This is suggestive of the RNA content of the cells and often correlates with cell size - redder points are cells with more RNA in them.
+
+The top right plot overlays the clustering onto the 2-D t-SNE projection of cells. The type of clustering analysis is selectable from the dropdown in the upper right - change this to vary the type of clustering and/or number of clusters that are assigned to the data.
+
+The table in the middle shows which genes are differentially expressed in each cluseter relative to all other clusters. To find the genes associated with a particular cluster, you can click the cluster number to sort the table by specificity for that cluster.
+
+The bottom left plot shows the effect of decreased sequencing depth on Sequencing Saturation, which is a measure of the fraction of library complexity that was observed. The far right point of the line is the full sequencing depth obtaned in this run.
+
+Similarly, the bottom right plot shows the effect of decreased sequencing depth on Median Genes per Cell, which is a way of measuring data yield as a function of depth. The far right point is the full sequencing depth obtained in this run.
+
+Various tables based on `cellranger count` result were g
 
 ##### Initial quality control
 ```python
