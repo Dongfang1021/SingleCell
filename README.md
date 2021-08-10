@@ -101,7 +101,7 @@ The bottom left plot shows the effect of decreased sequencing depth on Sequencin
 
 Similarly, the bottom right plot shows the effect of decreased sequencing depth on Median Genes per Cell, which is a way of measuring data yield as a function of depth. The far right point is the full sequencing depth obtained in this run.
 
-Various tables based on `cellranger count` result were g
+Various tables based on `cellranger count` result were generated using python scripts. These tables combined all the QC and alignment result together.
 
 ##### Initial quality control
 ```python
