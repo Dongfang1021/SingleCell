@@ -78,7 +78,16 @@ The run summary from `cellranger count` can be viewed by clicking "Summary" in t
 
 The number of cells detected, the mean reads per cell and the median genes detected per cell are prominently displayed near the top of the page.
 
-The Barcode Rank Plot under the "Cells" dashboard show the distribution of barcode counts and which barcodes were inferred to be associated with cells. The y-axis is the number of UMI mapped to each barcode and the x-axis is the nunber of barcodes below that value. A steep drop-off is indicative of good separation between the cell-associated barcodes and the barcodes associated with empty paritions. Barcodeds can be determined to be cell-associated based on their UMI count or by their RNA fprofiles, therefore some regions of the graph can contain both cell-associated and background-associated barcodes. The color of the graph represents the local density of barcodes that are cell-associated.
+**Valid barcode**
+barcode rate in whitelist
+add more info
+**Valid UMI**
+add more info
+UMI
+**Sequencing Saturation**
+ 
+
+The Barcode Rank Plot under the "Cells" dashboard show the distribution of barcode counts and which barcodes were inferred to be associated with cells. The y-axis is the number of UMI mapped to each barcode and the x-axis is the nunber of barcodes below that value. A steep drop-off is indicative of good separation between the cell-associated barcodes and the barcodes associated with empty paritions. Barcodeds can be determined to be cell-associated based on their UMI count or by their RNA profiles, therefore some regions of the graph can contain both cell-associated and background-associated barcodes. The color of the graph represents the local density of barcodes that are cell-associated.
 
 Analysis View
 The automated secondary analysis results can be viewed by clicking "Analysis" in the top left corner. The secondary analysis provides the followings:
