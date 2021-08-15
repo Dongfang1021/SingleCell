@@ -284,6 +284,31 @@ TFCat is a curated catalog of mouse and human transcription factors (TF) based o
 The protein-protein interaction network is constructed for differentially expressed genes in each cluster by using STRING protein interaction database. Protein-protein interaction is provided as network file which can be imported into Cytoscape software and visualized and edited. The central organizing metaphor of Cytoscape is a network graph, with molecular species represented as nodes and intermolecular interactions represented as links, that is, edges, between nodes.
 ```R
 ```
+
+### 2.7 Cell Type Annotation
+SingleR is used for cell type annotation. Database: blueprint encode (human), hpca (human), immgen (mouse) and mouse rnaseq (mouse).
+目前鉴定细胞类型的常用方法有两种，第一种是通过专业知识获得到细胞标记基因来鉴定细胞类型，第二种是与已有的单细胞数据鉴定结果进行比较分析，通过相关性分析或者构建分类器来对细胞进行分类。细胞簇，亚细胞簇
+### 2.8 Cell Trajactory Reconstruction
+拟时序分析，pseudo-time，也可以叫做trajectory inference，“拟时轨迹推断”。通过构建细胞间的变化轨迹来重塑细胞随着时间的变化过程，他可以在轨迹的开始，中间和结束状态识别细胞，揭示细胞间的基因表达的动态，还有助于识别触发状态转换的因素。方便看图的人快速理解这其中的细胞簇，时间先后，和相对应的状态。
+
+### 2.9 RNA velocity
+她是指基因表达状态变化率。通过分析单细胞rna测序中得到的未被剪接的没RNA来进行估算。RNA速率可以估计单个细胞在数小时内的未来状态。
+### 2.10 FateID（细胞命运偏向的概率量化）
+FateID分析的全称是Probabilistic Quantification of Cell Fate Bias,细胞命运偏向的概率量化。它是通过其他的已有的细胞系的分化方向的先验信息对要分析的细胞系的分化方向进行预测。
+CytoTRACE是一种无监督的预测细胞分化状态和方向的方法
+
+### 2.11 细胞簇之间的相互作用网络图
+配体-受体复合物介导的细胞间通讯，对协调多种生物过程，如发育，分化和炎症起着关键作用。为了研究不同类型细胞之间的相互作用是如何使生理过程得以进行的，可以通过寻找已知的配体和受体对在细胞内和细胞间的表达，来评估细胞间的交流。
+### 2.12 细胞周期分析
+### 2.13 单细胞SNP, Indel,CNV分析
+
+
+
+一个细胞能检测到的10～20%左右的gene：检测技术的限制和细胞实际表达基因数量的限制
+
+
+The main challenge in analyzing the data is biological rather than computational....the most time-comnsuming step is the biological interpretation and annotation of clusters, that is, understanding the biological significance of the different clusters.
+
 ## Some useful reference from 10X Genomics Website
 
 
