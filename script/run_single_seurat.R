@@ -61,6 +61,7 @@ high_feature = args$high_nGene
 high_mt_percent = args$high_pMT
 normalize_method = args$normalize_method
 genome = args$genome
+# mitochondira genes pattern based on reference genome
 if(genome == "GRCh38" || genome == "hg19"){
 	pattern_MT="^MT"
 }
@@ -204,13 +205,15 @@ dual.plot <- function(fig, file.prefix, w=7, res=75){
         print(fig)
         dev.off()
 }
-
+#######=========================================start to analyze==========================================######
 #load data
 data_10X <- Read10X(data.dir = input_file, gene.column = 2, unique.features = TRUE)
 
 #filter
 barcode_matrix <- CreateSeuratObject(counts = data_10X,min.cells = min_cells,min.features = low_feature,project = prefix)
+#Calculate mitochondria gene percentage and add this colum as percent.MT into barcode_matrix
 barcode_matrix[["percent.MT"]] <- PercentageFeatureSet(barcode_matrix, pattern = pattern_MT)
+
 barcode_matrix <- subset(x =barcode_matrix, subset=nFeature_RNA < high_feature & percent.MT < high_mt_percent)
 
 cat("normalize ... \n")
