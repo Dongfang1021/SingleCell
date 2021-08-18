@@ -259,13 +259,18 @@ cat(paste("pc.number: ",pc.num,"\n"))
 barcode_matrix = JackStraw(barcode_matrix, num.replicate = 100)
 barcode_matrix = ScoreJackStraw(barcode_matrix, dims = 1:pc.num)
 
-# cluster
+# cluster  K-nearest neighbor(KNN) graph 进行细胞聚类
+# resolution越大得到的细胞分类越多
 cat("cluster ...\n")
 barcode_matrix = FindNeighbors(barcode_matrix, reduction = "pca", dims = 1:pc.num, annoy.metric = annoy_metric)
 barcode_matrix = FindClusters(barcode_matrix, resolution = cluster.resolution)
 cluster.ids = levels(barcode_matrix@meta.data$seurat_clusters)
 
-# tSNE / UMAP
+# tSNE / UMAP 非线性降维
+# 如果分析目的是鉴定稀有细胞群体，可尝试增加pc的使用个数反复进行下游分析
+# 此处只是一种高纬的二维展示，不影响实际聚类结果，umap更能体现全局关系
+# T-SNE非线性降维：t- 分布领域嵌入算法 基于pca降维结果，选取pca显著pc进行再次降维，横纵坐标分别代表再次降维后的住成分，不同颜色代表之前聚类中得到的不同分类
+
 cat("tsne / umap ...\n")
 barcode_matrix = RunTSNE(object = barcode_matrix, reduction = "pca", dims.use = 1:pc.num, do.fast = TRUE)
 barcode_matrix = RunUMAP(object = barcode_matrix, reduction = "pca", dims = 1:pc.num, umap.method = "uwot",metric = "correlation")
@@ -316,12 +321,12 @@ p = p+xlab("PC")+ylab("Standard Deviation of PC")
 dual.plot(p, file.path(pca.dir,paste(prefix,".PCA.sdev_fitted",sep="")), w=8, res=mid_res)
 
 
-
+# 通过判断图中的拐点来判断选择前多少个pc继续进行下游分析，如果分析目的是鉴定稀有细胞群体，可尝试增加pc的使用个数反复进行下游分析
 f = ElbowPlot(barcode_matrix)
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.ElbowPlot",sep="")), w=8, res=mid_res)
 
 
-# 每个pc随机抽取1%基因，重复100次，得到的p值与均匀分布进行比较
+# 每个pc随机抽取1%基因，重复100次，得到的p值与均匀分布进行比较。比较显著的pc会聚集在p值比较小的部分
 f = JackStrawPlot(barcode_matrix, dim = 1:15)
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.JackStrawPlot",sep="")), w=8, res=mid_res)
 
@@ -339,7 +344,11 @@ dual.plot(umapplot, file.path(umap.dir,paste(prefix,".cluster.UMAP",sep="")), w=
 cluster.res = barcode_matrix@meta.data[,c("orig.ident","seurat_clusters")]
 write.xls(cluster.res, file.path(cluster.dir, paste(prefix,".clusters_info.xls",sep="")), first.colname="barcode")
 
-########  biomarkers / diff analysis
+########  biomarkers / diff analysis ####################
+# FindAllMarkers可以自动得到每个聚类和其他聚类相比的marker gene
+# FindMarkers也可以用ident.1, ident.2指定比较的聚类，min.pct设置基因至少要出现在两个做比较聚类的**%的细胞中
+# 差异检验的方式：test.use参数指定
+
 diff.exp = FindAllMarkers(
 	object = barcode_matrix, 
 	only.pos = F, 
@@ -356,7 +365,9 @@ if(has_genename){
 diff.exp = diff.exp[,c(8,7,6,2,1,5,3,4)]
 diff.sig.exp = subset(diff.exp, abs(avg_logFC)>logfc.diff & p_val_adj<padjust.diff)
 marker.exp = subset(diff.exp, avg_logFC>logfc.marker & p_val_adj<padjust.marker)
+# top6 平均差异倍数最大的6个marker gene
 top6.markers <- diff.exp %>% group_by(cluster) %>% top_n(n = 6, wt = avg_logFC)
+# top10 平均差异倍数最大的10个marker gene
 top10.markers <- diff.exp %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 
 diff.file = file.path(Markergenedir,paste(prefix,".cluster.diffexp.xls",sep=""))
@@ -368,7 +379,7 @@ write.table(diff.sig.exp, file=diff.sig.file, quote=F, sep="\t", row.names=F)
 write.table(marker.exp, file=marker.file, quote=F, sep="\t", row.names=F)
 #write.table(top10.markers, file=marker.top10.file, quote=F, sep="\t", row.names=F)
 
-
+# marker基因在各个细胞中的表达热图，此处每个cluster只展示平均差异倍数最大的10个marker基因
 f = DoHeatmap(barcode_matrix, features = top10.markers$gene)+scale_fill_gradient2( low = rev(c('#d1e5f0','#67a9cf','#2166ac')), mid = "white", high = rev(c('#b2182b','#ef8a62','#fddbc7')), midpoint = 0, guide = "colourbar", aesthetics = "fill") #+ NoLegend()
 dual.plot(f, file.path(Markergenedir,paste(prefix,".cluster.top10.genename.heatmap",sep="")), w=12, res=high_res)
 f = DoHeatmap(barcode_matrix, features = top10.markers$gene, raster=FALSE)+scale_fill_gradient2( low = rev(c('#d1e5f0','#67a9cf','#2166ac')), mid = "white", high = rev(c('#b2182b','#ef8a62','#fddbc7')), midpoint = 0, guide = "colourbar", aesthetics = "fill") #+ NoLegend()
