@@ -1,6 +1,5 @@
 
 # R script used for cell filteration
-.libPaths("/ifs/TJPROJ3/HW/PUBLIC/software/Rlib/Rlib")
 library(argparse)
 #library(dplyr)
 library(Seurat)
