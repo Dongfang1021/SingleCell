@@ -33,6 +33,14 @@
 #传统蛋白marker基因：传统蛋白的marker手册，比如BD公司的Human and Mouse CD Marker Handbook和Invitrogen公司的Immune cell guide都是非常不错的手册，免疫细胞几乎都可以使用以上marker基因亚群鉴定
                   #Cellmarker数据库 13605 cell markers of 467 cell types in 158 human tissue/sub-tissues and 9148 cell markers of 389 cell types in 81 mouse tissues/subtissue
 # panglaodb：8286 association （178 cell types， 4679 gene symbols， 29 tissues）
+# 单细胞marker基因数据库-单细胞图谱（人和小鼠）https://db.cngb.org/HCL/#  http://bis.zju.edu.cn/MCA/blast.html 小鼠50多种组织的四十万个细胞的单细胞转录组数据，鉴定除了小鼠的98个主要细胞亚群，和800多细胞亚型。
+                                        #2020年，702968个单细胞的转录组数据，研究团队系统建立了跨越人类胚胎和成年两个时期的单细胞图谱，鉴定了102种细胞簇和843种细胞亚类。
+# 单细胞marker基因数据库-EMBL-EBI https://www.ebi.ac.uk/gxa/sc/home 
+# 单细胞marker基因数据库-Human Cell Atlas https://data.humancellatlas.org/
+
+##########################################singleR######################################
+#singleR V1.0.0之前的版本，只需要选择human或者mouse两个物种进行分析即可，无需设置参考数据集，参考数据集都是内置在包中，但是运行极慢，及其占用资源；
+#V1.0.0版本参考数据集可以自己选择，参考数据集更友好，运行速度极快。
 
 
 
@@ -117,7 +125,7 @@ counts <- GetAssayData(Seuratobject)
 
 print("Star singler")
 singler <- CreateSinglerObject(counts=counts,
-  project.name="Novogene 10X project", # choose
+  project.name="10X scRNAseq", # choose
   min.genes = 0, # ignore cells with fewer than 0 genes
   technology = "10X",
   species = refspecies, #choose Human or Mouse
