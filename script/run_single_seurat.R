@@ -54,11 +54,12 @@ analydir = args$analydir
 
 ## qc
 
-
+# filter paramters
 min_cells = args$min_cells
 low_feature = args$low_nGene
 high_feature = args$high_nGene
 high_mt_percent = args$high_pMT
+# normalization method
 normalize_method = args$normalize_method
 genome = args$genome
 # mitochondira genes pattern based on reference genome
@@ -205,7 +206,8 @@ dual.plot <- function(fig, file.prefix, w=7, res=75){
         print(fig)
         dev.off()
 }
-#######=========================================start to analyze==========================================######
+#####################=======================================start to analyze=======================================########################
+#####数据再过滤和标准化
 #load data
 data_10X <- Read10X(data.dir = input_file, gene.column = 2, unique.features = TRUE)
 
@@ -213,7 +215,7 @@ data_10X <- Read10X(data.dir = input_file, gene.column = 2, unique.features = TR
 barcode_matrix <- CreateSeuratObject(counts = data_10X,min.cells = min_cells,min.features = low_feature,project = prefix)
 #Calculate mitochondria gene percentage and add this colum as percent.MT into barcode_matrix
 barcode_matrix[["percent.MT"]] <- PercentageFeatureSet(barcode_matrix, pattern = pattern_MT)
-
+# filter cells based on gene numbers is lower than high_feature and MT percent is lower than high_mt_percent
 barcode_matrix <- subset(x =barcode_matrix, subset=nFeature_RNA < high_feature & percent.MT < high_mt_percent)
 
 cat("normalize ... \n")
@@ -221,6 +223,7 @@ feature.names = c("nFeature_RNA","nCount_RNA","percent.MT")
 if(normalize_method != "SCT"){
 	scale_factor = median(barcode_matrix@meta.data[,feature.names[1]])
 	print(paste("scale_factor = ", scale_factor))
+        #Normalization method and scale_factor
 	barcode_matrix = NormalizeData(object = barcode_matrix, normalization.method = normalize_method, scale.factor = scale_factor)
 	barcode_matrix = FindVariableFeatures(object = barcode_matrix,
 		selection.method = selection_method,
@@ -231,14 +234,15 @@ if(normalize_method != "SCT"){
 		nfeatures = nfeatures
 	)
 	sel.features = VariableFeatures(object = barcode_matrix)
+        #整理数据ScaleData，使用全部细胞作为后续分析既慢且无必要，features中给出上一步筛选出的表达量变化基因进行后续分析(vars.to.regress)，同时可以设置忽略相关的feature
 	barcode_matrix = ScaleData(object = barcode_matrix, features = sel.features, vars.to.regress = feature.names)
-	#write.table(barcode_matrix@var.genes,file=file.path(HVGsdir,paste(prefix,"_Variable_genes.txt",sep="")),quote=F,sep="\t",row.names=F)
+        #整理好的数据为后续数据降维和细胞巨雷做准备，去除nUMI和线粒体基因比例，后续降维将不考虑这两个因素，考虑基因标准化后的表达量log（geneUMIcount*10000）
 }else{
 	barcode_matrix = SCTransform(barcode_matrix, verbose = FALSE, variable.features.n = nfeatures)
 	sel.features = VariableFeatures(object = barcode_matrix)
 }
 
-# pca
+# pca 主成分分析，用于多种非随机因素变量进行关联在一起，使用较少的变量来代替之前的变量，线性降维，不能解释特征见的复杂多项式关系，相似数据点不够靠近。 
 cat("pca ...\n")
 barcode_matrix = RunPCA(object = barcode_matrix, do.print = F, npcs = pc_dim)
 ## Determine the ‘dimensionality’ 
@@ -251,6 +255,7 @@ if(!is.null(pc_number)){
 	pc.num = determine_PCnum(fitted(pc.fit))
 }
 cat(paste("pc.number: ",pc.num,"\n"))
+#每个pc随机抽取1%gene，重复100次，得到的p值与均匀分布进行比较
 barcode_matrix = JackStraw(barcode_matrix, num.replicate = 100)
 barcode_matrix = ScoreJackStraw(barcode_matrix, dims = 1:pc.num)
 
@@ -294,9 +299,15 @@ HVGgene = data.frame(Gene=sel.features, Genename=map.genename(sel.features,GENEN
 write.table(HVGgene,file=file.path(HVGsdir,paste(prefix,".VariableFeatures.genes.txt",sep="")),quote=F,sep="\t",row.names=F)
 
 ## pca out files
+
+#查看特定pc中的基因和基因对应的贡献度
 f = VizDimLoadings(barcode_matrix, dims = 1:2, reduction = "pca")
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.topGene",sep="")), w=8, res=mid_res)
 
+# DimPlot()绘制pca散点图，一般只绘制pc1和pc2
+
+#根据pca结果绘制基因表达量热图，dims可以指定绘制那个pc，cells设置使用细胞的个数，可以直观查看主成分的代表性，
+#可用于辅助判断后续聚类和降维使用的pc个数，一般选取1～15个，细胞类群较多可以尝试使用更多pc
 f = DimHeatmap(barcode_matrix, dims = 1:15, cells = 500, balanced = TRUE, fast=FALSE, raster=FALSE)
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.heatmap",sep="")), w=12, res=mid_res)
 
@@ -304,9 +315,13 @@ p = ggplot(pc.stdev, aes(PC,stdev)) + geom_point(size=3) + geom_line(aes(PC,fitt
 p = p+xlab("PC")+ylab("Standard Deviation of PC")
 dual.plot(p, file.path(pca.dir,paste(prefix,".PCA.sdev_fitted",sep="")), w=8, res=mid_res)
 
+
+
 f = ElbowPlot(barcode_matrix)
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.ElbowPlot",sep="")), w=8, res=mid_res)
 
+
+# 每个pc随机抽取1%基因，重复100次，得到的p值与均匀分布进行比较
 f = JackStrawPlot(barcode_matrix, dim = 1:15)
 dual.plot(f, file.path(pca.dir,paste(prefix,".PCA.JackStrawPlot",sep="")), w=8, res=mid_res)
 
