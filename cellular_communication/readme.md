@@ -85,8 +85,42 @@ significant_means.txt 每对受体配体的显著性结果的平均表达量值�
 ### 3.1 介绍
 iTalk是由MD研究中心wanglinhua团队开发的一款细胞通讯分析工具。
 ![](image/workflow.jpg)
-Raw Input
-Data Processing
-Database Searching
-Annotation
-Illustration
+
+iTalk 为一款发布在Github上面的R包，直接使用devtools进行安装即可，对R版本要求没有提及。iTALK软件是使用基因平均表达量进行筛选，比如先筛选基因在每个亚群中的平均表达量，平均表达量前百分之多少的才保留，这里默认的为50%的基因保留，为了从另外一个角度来表达高丰度表达的基因，可以对其进行改写，将平均表达量改写成pct（每个基因在每个亚群表达的细胞占比）。
+作者将细胞受体配体分成了四种类，分别为growth factor， other，cytokine, checkpoint, 后续结果也将分成四个类进行分析展示。
+### 3.2 iTalk的使用--输入文件的准备
+输入文件主要是表达矩阵和细胞类型文件，由于单细胞转录分析基本上都需要使用seurat，这里直接使用seurat分析的输出文件rds文件作为输入文件。
+```R
+library(Seurat)
+library(dplyr)
+#raw or normalized
+counts <-dplyr::bind_cols(t(as.matrix(rds@assays$RNA@counts)), cell_typ=rds@meta.data[as.vector(rownames(rds@assay$RNA@counts)),]$seurat_clusters, compare_group=rds@meta.data[as.vector(rownames(rds@assay$RNA@counts)),]$stim))
+#
+celltype<-as.character(sort(unique(counts$cell_type)))
+color<-hue_pal()(length(unique(Idents(rds))))
+```
+主要输入文件为上面的counts矩阵和celltype，另外一个输入文件为database，默认直接用人的数据库即可。
+```R
+##highly expressed ligand-receptor pairs
+#find top 50 percent highly expressed genes
+highly_exprs_genes<-rawParse(counts, top_genes=50, stats='mean')
+#find the ligand-receptor pairs from highly expressed genes
+comm_list<-c('growth factor', 'other', 'cytokine', 'checkpoint')
+cell_col<-structure(c('#4a84ac', '#4a1dc6', '#e874bf', '#b79eed', '#ff636b', '#52c63b', '#9ef49a'), names=unique(counts$cell_type))#color
+par(mfrow=c(1,2))
+res<-NULL
+for(comm_type in comm_list){
+	res_cat<-FindLR(highly_exprs_genes, datatype='mean count', comm_type=comm_type)#找到受体配体结果
+	res_cat<-res_cat[order(res_cat$cell_from_mean_exprs*res_cat$cell_to_mean_exprs, decreasing=T),]#排序
+	write.csv(res_cat, paste(gsub("","_",comm_type), "net.csv", sep='_'), quote=F, row.names=T)#输出表格结果
+	#plot by ligand category
+	NetView(res_cat, col=cell_col, vertex.label.cex=1, arrow.width=1, edge.max.width=5)
+	#top 20 ligand-receptor pairs
+	LRPlot(res_cat[1:20], datatype='mean count', cell_col=cell_col, link.arr.lwd=res_cat$cell_from_mean_exprs[1:20], link.arr.width=res_cat$cell_to_mean_exprs[1:20])
+	title(comm_type)
+	res<-rbind(res, res_cat)
+}
+res<-res[order(res$cell_from_mean_exprs*res$cell_to_mean_exprs, descreasing=T),][1:20,]
+NetView(res, col=cell_col, vertex.label.cex=1, arrow.width=1, edge.max.width=5)
+LRPlot(res[1:20,], datatype='mean count', cell_col=cell_col, link.arr.lwd=res$cell_from_mean_exprs[1:20], link.arr.width=res$cell_to_mean_exprs[1:20])
+```
