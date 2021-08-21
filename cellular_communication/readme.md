@@ -124,3 +124,18 @@ res<-res[order(res$cell_from_mean_exprs*res$cell_to_mean_exprs, descreasing=T),]
 NetView(res, col=cell_col, vertex.label.cex=1, arrow.width=1, edge.max.width=5)
 LRPlot(res[1:20,], datatype='mean count', cell_col=cell_col, link.arr.lwd=res$cell_from_mean_exprs[1:20], link.arr.width=res$cell_to_mean_exprs[1:20])
 ```
+
+## 4 单细胞细胞通讯总结
+### 4.1 主要软件总结
+- Celltalker： 这个分析模式与iTalk几乎一致，与seurat结果兼容性较好。分析方法上没有什么新意
+- CellphoneDB：目前数据库最新的，内容最完善的，考虑最全面的分析方法。
+- iTALK： MD研究中心wanglinhua团队开发的细胞通讯分析工具，主要是利用以后的数据库进行受体配体匹配，挑选高丰度的受体配体分析
+- NicheNet：这个方法是最有新意的方法，通过对人和小鼠建模进行受体或者靶基因的筛选，与seurat兼容性结果较好。
+### 4.2 其他物种的细胞通讯分析
+前面讲的集中细胞通讯分析都是针对物种人的进行分析，随着单细胞转录组技术的发展，越来越多的物种进行分析，但是没有相应的数据库，那如何进行分析？
+同源基因，我们可以通过同源基因得到受体体配作用对，然后进行细胞通讯分析，或者后面进行实验验证也是极好的。同源基因一个是通过blast比对得到，另一方面可以通过ensemble数据库直接获得同源基因，然后进行匹配。可以用iTalk通过database参数传入数据库，进行分析以及结果展示。
+### 4.3目前细胞通讯分析存在的问题
+- 物种不全： 目前主要是人的，其他物种需要通过同源基因进行分析
+- 数据库是否全： 不确定现在的2000多受体配体是否就是所有细胞通讯的分子
+- 基因表达 目前的细胞通讯只关注了细胞基因的表达，没有考虑到烦你成蛋白后的积累和消耗
+- 空间位置：目前的数据库和分析都没有考虑到细胞类型的空间位置和距离对细胞通讯的影响，这对细胞通讯具有十分重要的影响。
