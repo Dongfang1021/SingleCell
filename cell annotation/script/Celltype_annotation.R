@@ -99,6 +99,7 @@ write.table(singler$singler[[1]]$SingleR.single.main, file = file.path(outdir,pa
 write.table(singler$singler[[2]]$SingleR.single.main, file = file.path(outdir,paste(prefix,".",reflistname[2],"_maintype.xls",sep="")), quote=F, sep="\t",row.names=F)
 
 #only show in screen
+
 for (ref.set in names(singler$singler) ) {
   types <- singler$singler[[ref.set]]$SingleR.single.main$labels[,1]
   cat("==== ", ref.set, ": ====\n")
@@ -106,6 +107,7 @@ for (ref.set in names(singler$singler) ) {
 }
 
 #add singler cell lable to Seuratobject
+
 for (ref.set in names(singler$singler) ) {
   types <- singler$singler[[ref.set]]$SingleR.single.main$labels[,1]
   Seuratobject <- AddMetaData(Seuratobject,
